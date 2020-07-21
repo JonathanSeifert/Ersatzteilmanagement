@@ -1,0 +1,28 @@
+# Use postgres/example user/password credentials
+version: '3.4'
+
+services:
+
+  db:
+    image: postgres:12
+    restart: always
+    env_file:
+      - ".env"
+    environment:
+      - POSTGRES_PASSWORD
+    ports:
+      - 5435:5432
+    volumes:
+      - "./data:/var/lib/postgresql/data"
+      - "./init:/docker-entrypoint-initdb.d"
+
+
+  adminer:
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    environment:
+     - ADMINER_PLUGINS=account-nolock-plugin
+    restart: always
+    ports:
+      - 8085:8080
