@@ -1,2 +1,2 @@
-# Ersatz- und Verschleissteilmanagement 
-Dieses Repository beinhaltet das Projekt "Ersatz- und Verschleißteilmanagement", welches zum Modul "Datenbank-Programmierung" gehört.
+# Ersatzteilmanagement 
+Dieses Repository beinhaltet das Projekt "Ersatteilmanagement", welches zum Modul "Datenbank-Programmierung" gehört.
