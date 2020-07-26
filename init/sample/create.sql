@@ -31,6 +31,7 @@ CREATE TABLE stadt(
   stadt_id NUMERIC(4) PRIMARY KEY,
   bundesland_id CHARACTER(5) NOT NULL REFERENCES bundesland,
   stadt_name VARCHAR(58) NOT NULL,
+  plz VARCHAR(10) NOT NULL,
   UNIQUE(bundesland_id, stadt_name),
   CONSTRAINT bundesland_format CHECK
     (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]')
