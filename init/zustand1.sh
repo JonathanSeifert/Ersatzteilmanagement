@@ -27,6 +27,17 @@ CREATE TABLE stadt(
   CONSTRAINT bundesland_format CHECK
     (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]')
 );
+CREATE TABLE standort(
+  standort_id NUMERIC(2) PRIMARY KEY,
+  stadt_id NUMERIC(4) NOT NULL REFERENCES stadt,
+  beschreibung VARCHAR(50) NOT NULL,
+  anschrift VARCHAR(50) NOT NULL
+);
+CREATE TABLE lager(
+  lager_id NUMERIC(3) PRIMARY KEY,
+  standort_id NUMERIC(2) NOT NULL REFERENCES standort,
+  lager_name VARCHAR(50) NOT NULL
+);
 CREATE TABLE priorisierung(
   p_id CHARACTER(1) PRIMARY KEY,
   beschreibung VARCHAR(45) NOT NULL,
