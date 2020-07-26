@@ -37,4 +37,14 @@ INSERT INTO priorisierung(p_id, beschreibung) VALUES
   ('b', 'Lieferzeit zwischen einem Tag und einer Woche'),
   ('c', 'Lieferzeit von mehr als einer Woche')
 ;
+CREATE TABLE eclass(
+  eclass VARCHAR(11) PRIMARY KEY,
+  eclass_beschreibung VARCHAR(50) NOT NULL,
+  CONSTRAINT eclass_format CHECK
+   (eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' OR
+    eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' OR
+    eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]' OR
+    eclass SIMILAR TO '[0-9][0-9]'),
+    UNIQUE(eclass, eclass_beschreibung)
+);
 EOSQL
