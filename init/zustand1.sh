@@ -2,9 +2,17 @@
 
 set -e
 
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" <<'EOF' <<-EOSQL
   CREATE SCHEMA zustand1;
   CREATE DATABASE zustand1;
+CREATE FUNCTION aktualisiert() RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+  BEGIN
+  NEW.letzte_aktualisierung = CURRENT_TIMESTAMP;
+  RETURNS NEW;
+  END
+   $$;
 CREATE TABLE land(
   land_id CHARACTER(2) PRIMARY KEY,
   land_name VARCHAR(50) NOT NULL,
@@ -48,6 +56,21 @@ CREATE TABLE priorisierung(
   beschreibung VARCHAR(45) NOT NULL,
   CONSTRAINT a_b_c CHECK(p_id SIMILAR TO '[a-c]')
 );
+CREATE SEQUENCE lieferant_id_seq AS SMALLINT START 1 INCREMENT 1 MAXVALUE 999
+;
+CREATE TABLE lieferant(
+  lieferant_id NUMERIC(3) PRIMARY KEY,
+  lieferant_name VARCHAR(50) NOT NULL,
+  stadt_id NUMERIC(3) NOT NULL REFERENCES stadt,
+  anschrift VARCHAR(50) NOT NULL,
+  email VARCHAR(50) NOT NULL,
+  ansprechpartner VARCHAR(50),
+  letzte_aktualisierung TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+  CONSTRAINT email_format CHECK (email LIKE '___%@%.__%')
+);
+CREATE TRIGGER aktualisierung_lieferant BEFORE UPDATE ON lieferant
+  FOR EACH ROW EXECUTE PROCEDURE aktualisiert()
+;
 INSERT INTO priorisierung(p_id, beschreibung) VALUES
   ('a', 'Ersatzteil muss auf Lager sein'),
   ('b', 'Lieferzeit zwischen einem Tag und einer Woche'),
@@ -64,3 +87,4 @@ CREATE TABLE eclass(
     UNIQUE(eclass, eclass_beschreibung)
 );
 EOSQL
+EOF
