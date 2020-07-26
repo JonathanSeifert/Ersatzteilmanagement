@@ -3,6 +3,8 @@ data/
 .env
 .env.example
 
+db_reset.sh
+
 *.pdf
 *.class
 
