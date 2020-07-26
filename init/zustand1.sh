@@ -38,6 +38,11 @@ CREATE TABLE lager(
   standort_id NUMERIC(2) NOT NULL REFERENCES standort,
   lager_name VARCHAR(50) NOT NULL
 );
+CREATE TABLE abteilung(
+  abteilung_id NUMERIC(4) PRIMARY KEY,
+  standort_id NUMERIC(2) NOT NULL REFERENCES standort,
+  standort_name VARCHAR(50)
+);
 CREATE TABLE priorisierung(
   p_id CHARACTER(1) PRIMARY KEY,
   beschreibung VARCHAR(45) NOT NULL,
