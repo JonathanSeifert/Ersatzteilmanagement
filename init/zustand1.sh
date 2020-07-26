@@ -27,5 +27,14 @@ CREATE TABLE stadt(
   CONSTRAINT bundesland_format CHECK
     (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]')
 );
-
+CREATE TABLE priorisierung(
+  p_id CHARACTER(1) PRIMARY KEY,
+  beschreibung VARCHAR(45) NOT NULL,
+  CONSTRAINT a_b_c CHECK(p_id SIMILAR TO '[a-c]')
+);
+INSERT INTO priorisierung(p_id, beschreibung) VALUES
+  ('a', 'Ersatzteil muss auf Lager sein'),
+  ('b', 'Lieferzeit zwischen einem Tag und einer Woche'),
+  ('c', 'Lieferzeit von mehr als einer Woche')
+;
 EOSQL
