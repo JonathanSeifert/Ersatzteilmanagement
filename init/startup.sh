@@ -24,7 +24,7 @@ pw_length=${#pw[@]}
 db="etm"
 
 #Zustaende
-declare -a zustand=("zustand1" "zustand2" "zustand3")
+declare -a zustand=("zustand_1" "zustand_2" "zustand_3")
 zustand_length=${#array[@]}
 
 #Datenbank erstellen
@@ -39,31 +39,40 @@ echo
 #Schemaerstellung
 echo Schemaerstellung
 echo ----------------
-  echo Erstelle Zustand_1.
+echo Erstelle zustand_1
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
-  CREATE SCHEMA zustand1;
-  SET SEARCH_PATH TO zustand1;
+  \connect $db
+  CREATE SCHEMA zustand_1;
+  SET SEARCH_PATH TO zustand_1
   \i docker-entrypoint-initdb.d/sample/create.sql
 EOSQL
-  echo Zustand _1 erstellt.
-  echo 
-  echo Erstelle Zustand_2.
+echo zustand_1 erstellt.
+echo 
+echo Erstelle zustand_2
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
-  CREATE SCHEMA zustand2;
-  SET SEARCH_PATH TO zustand2;
+  \connect $db
+  CREATE SCHEMA zustand_2;
+  SET SEARCH_PATH TO zustand_2;
   \i docker-entrypoint-initdb.d/sample/create.sql
 EOSQL
-  echo Zustand_3 erstellt.
-    echo 
-  echo Erstelle Zustand_2.
+echo zustand_2 erstellt.
+echo 
+echo Erstelle zustand_3
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
-  CREATE SCHEMA zustand3;
-  SET SEARCH_PATH TO zustand3;
+  \connect $db
+  CREATE SCHEMA zustand_3;
+  SET SEARCH_PATH TO zustand_3;
   \i docker-entrypoint-initdb.d/sample/create.sql
 EOSQL
-  echo Zustand_3 erstellt.
+echo zustand_3 erstellt.
+echo 
+#Automatische Datenbankverbindung
+echo Automatische Verbindung mit Datenbank $db eingerichten.
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
+    REVOKE connect ON DATABASE $db FROM PUBLIC
+EOSQL
+echo Automatische Verbindung mit Datenbank $db eingerichtet.
 echo
- 
 #Nutzererstellung
 echo Nutzererstellung
 echo ----------------
@@ -76,4 +85,4 @@ EOSQL
   echo Nutzer: ${nutzer[$i]} erstellt.
   echo
 done
-
+echo ---------------------------------------------------------------------------
