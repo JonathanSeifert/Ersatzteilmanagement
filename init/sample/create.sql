@@ -21,20 +21,24 @@ CREATE TABLE bundesland(
   bundesland_id CHARACTER(5) PRIMARY KEY,
   land_id CHARACTER(2) NOT NULL REFERENCES land,
   bundesland_name VARCHAR(50) NOT NULL,
+  CONSTRAINT land_id CHECK (land_id SIMILAR TO '[A-Z][A-Z]'),
   CONSTRAINT bundesland_format CHECK
-    (bundesland_id similar to '[A-Z][A-Z]:[A-Z][A-Z]'),
+    (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]' OR
+     bundesland_id LIKE TO '[A-Z][A-Z]%')
   UNIQUE(bundesland_id, land_id)
 );
 
 --Tabelle fuer die Staedte
+CREATE SEQUENCE stadt_id_seq AS SMALLINT START 1 INCREMENT 1 MAXVALUE 9999;
 CREATE TABLE stadt(
-  stadt_id NUMERIC(4) PRIMARY KEY,
+  stadt_id NUMERIC(4) PRIMARY KEY DEFAULT NEXTVAL('stadt_id_seq'),
   bundesland_id CHARACTER(5) NOT NULL REFERENCES bundesland,
   stadt_name VARCHAR(58) NOT NULL,
   plz VARCHAR(10) NOT NULL,
   UNIQUE(bundesland_id, stadt_name),
   CONSTRAINT bundesland_format CHECK
-    (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]')
+    (bundesland_id SIMILAR TO '[A-Z][A-Z]:[A-Z][A-Z]' OR
+     bundesland_id LIKE TO '[A-Z][A-Z]%')
 );
 
 --Tabelle fuer die Standorte
