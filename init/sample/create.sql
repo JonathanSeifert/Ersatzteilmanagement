@@ -45,22 +45,22 @@ CREATE TABLE stadt(
 CREATE TABLE standort(
   standort_id CHARACTER(2) PRIMARY KEY,
   stadt_id NUMERIC(3) NOT NULL REFERENCES stadt,
-  beschreibung VARCHAR(50) NOT NULL,
+  standort_name VARCHAR(50) NOT NULL,
   anschrift VARCHAR(50) NOT NULL
 );
 
 --Tabelle fuer die Lager
 CREATE TABLE lager(
-  lager_id CHARACTER(3) PRIMARY KEY,
-  standort_id NUMERIC(2) NOT NULL REFERENCES standort,
+  lager_id CHARACTER(4) PRIMARY KEY,
+  standort_id CHARACTER(2) NOT NULL REFERENCES standort,
   lager_name VARCHAR(50) NOT NULL
 );
 
 --Tabelle fuer die Abteilungen
 CREATE TABLE abteilung(
   abteilung_id CHARACTER(4) PRIMARY KEY,
-  standort_id NUMERIC(2) NOT NULL REFERENCES standort,
-  standort_name VARCHAR(50)
+  standort_id CHARACTER(2) NOT NULL REFERENCES standort,
+  abteilung_name VARCHAR(50)
 );
 
 --Sequenz, CREATE und Trigger fuer die Lieferaten-Tabelle
@@ -110,7 +110,7 @@ CREATE SEQUENCE e_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 99999
 CREATE TABLE ersatzteil(
   e_id NUMERIC(5) PRIMARY KEY DEFAULT(NEXTVAL('e_id_seq')),
   eclass VARCHAR(11) NOT NULL REFERENCES eclass,
-  abteilung_id NUMERIC(4) NOT NULL REFERENCES abteilung,
+  abteilung_id CHARACTER(4) NOT NULL REFERENCES abteilung,
   lieferant_id NUMERIC(3) NOT NULL REFERENCES lieferant,
   kennzeichnung VARCHAR(50) NOT NULL,
   kosten NUMERIC(9,2) NOT NULL,
@@ -126,10 +126,11 @@ CREATE TRIGGER aktualiserung_ersatzteil BEFORE UPDATE ON ersatzteil
 --Sequenz, Create und Trigger für Tabelle für Lagerort-Verwaltung
 CREATE SEQUENCE lagerort_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 999999
 ;
+
 CREATE TABLE lagerort(
   lagerort_id NUMERIC(6) PRIMARY KEY,
   e_id NUMERIC(5) NOT NULL REFERENCES ersatzteil,
-  lager_id NUMERIC(2) NOT NULL REFERENCES lager,
+  lager_id VARCHAR(4) NOT NULL REFERENCES lager,
   anzahl NUMERIC(2) NOT NULL,
   mindestbestand NUMERIC(2) NOT NULL,
   letzter_abgang TIMESTAMP(0) WITHOUT TIME ZONE,
@@ -140,6 +141,7 @@ CREATE TABLE lagerort(
     (mindestbestand>0),
   UNIQUE(e_id, lager_id)
 );
+
 CREATE FUNCTION teil_entnommen() RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
