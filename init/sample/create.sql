@@ -43,7 +43,7 @@ CREATE TABLE stadt(
 
 --Tabelle fuer die Standorte
 CREATE TABLE standort(
-  standort_id NUMERIC(2) PRIMARY KEY,
+  standort_id CHARACTER(2) PRIMARY KEY,
   stadt_id NUMERIC(3) NOT NULL REFERENCES stadt,
   beschreibung VARCHAR(50) NOT NULL,
   anschrift VARCHAR(50) NOT NULL
@@ -51,14 +51,14 @@ CREATE TABLE standort(
 
 --Tabelle fuer die Lager
 CREATE TABLE lager(
-  lager_id NUMERIC(3) PRIMARY KEY,
+  lager_id CHARACTER(3) PRIMARY KEY,
   standort_id NUMERIC(2) NOT NULL REFERENCES standort,
   lager_name VARCHAR(50) NOT NULL
 );
 
 --Tabelle fuer die Abteilungen
 CREATE TABLE abteilung(
-  abteilung_id NUMERIC(4) PRIMARY KEY,
+  abteilung_id CHARACTER(4) PRIMARY KEY,
   standort_id NUMERIC(2) NOT NULL REFERENCES standort,
   standort_name VARCHAR(50)
 );
