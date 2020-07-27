@@ -118,3 +118,45 @@ CREATE TABLE ersatzteil(
 CREATE TRIGGER aktualiserung_ersatzteil BEFORE UPDATE ON ersatzteil
   FOR EACH ROW EXECUTE PROCEDURE aktualisiert()
 ;
+
+--Sequenz, Create und Trigger für Tabelle für Lagerort-Verwaltung
+CREATE SEQUENCE lagerort_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 999999
+;
+CREATE TABLE lagerort(
+  lagerort_id NUMERIC(6) PRIMARY KEY,
+  e_id NUMERIC(5) NOT NULL REFERENCES ersatzteil,
+  lager_id NUMERIC(2) NOT NULL REFERENCES lager,
+  anzahl NUMERIC(2) NOT NULL,
+  mindestbestand NUMERIC(2) NOT NULL,
+  letzter_abgang TIMESTAMP(0) WITHOUT TIME ZONE,
+  letzter_zugang TIMESTAMP(0) WITHOUT TIME ZONE,
+  CONSTRAINT anzahl_darf_nicht_negativ_sein CHECK
+    (anzahl>-1),
+  CONSTRAINT mindestbestand_muss_mind_1_sein CHECK
+    (mindestbestand>0),
+  UNIQUE(e_id, lager_id)
+);
+CREATE FUNCTION teil_entnommen() RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+  BEGIN
+  IF (OLD.anzahl > NEW.anzahl) THEN NEW.letzter_abgang = CURRENT_TIMESTAMP;
+  END IF;
+  RETURN NEW;
+  END
+   $$;
+CREATE TRIGGER entnahme BEFORE UPDATE OF anzahl ON lagerort
+FOR EACH ROW EXECUTE PROCEDURE teil_entnommen()
+;
+CREATE FUNCTION teil_zugefuehrt() RETURNS TRIGGER 
+LANGUAGE plpgsql
+AS $$
+  BEGIN
+  IF (OLD.anzahl>NEW.anzahl) THEN NEW.letzter_abgang = CURRENT_TIMESTAMP;
+  END IF;
+  RETURN NEW;
+  END
+   $$;
+CREATE TRIGGER zufuehrung BEFORE UPDATE OF anzahl ON lagerort
+FOR EACH ROW EXECUTE PROCEDURE teil_zugefuehrt()
+;
