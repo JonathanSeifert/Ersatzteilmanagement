@@ -24,7 +24,7 @@ CREATE TABLE bundesland(
   CONSTRAINT land_id CHECK (land_id SIMILAR TO '[A-Z][A-Z]'),
   CONSTRAINT bundesland_format CHECK
     (bundesland_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
-     bundesland_id LIKE '[A-Z][A-Z]%'),
+     bundesland_id LIKE '__%'),
   UNIQUE(bundesland_id, land_id)
 );
 
@@ -35,10 +35,10 @@ CREATE TABLE stadt(
   bundesland_id VARCHAR(6) NOT NULL REFERENCES bundesland,
   stadt_name VARCHAR(58) NOT NULL,
   plz VARCHAR(10) NOT NULL,
-  UNIQUE(bundesland_id, stadt_name),
+  UNIQUE(bundesland_id, plz),
   CONSTRAINT bundesland_format CHECK
     (bundesland_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
-     bundesland_id LIKE '[A-Z][A-Z]%')
+     bundesland_id LIKE '__%')
 );
 
 --Tabelle fuer die Standorte
