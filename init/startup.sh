@@ -5,6 +5,7 @@ set -e
 #Systemadministrator
 nutzer="admin"
 pw_nutzer="data"
+recht_nutzer="SUPERUSER" #alter role ... with recht_nutzer
 
 #Lagerist
 nutzer1="lagerist"
@@ -22,52 +23,45 @@ declare -a pw=($pw_nutzer $pw_nutzer1 $pw_nutzer2)
 pw_length=${#pw[@]}
 #Datenbank
 db="etm"
+db_full="Ersatzteilmanagement"
 
 #Zustaende
-declare -a zustand=("zustand_1" "zustand_2" "zustand_3")
-zustand_length=${#array[@]}
+zustand1="zustand1"
+zustand2="zustand2"
+zustand3="zustand3"
+declare -a zustand=($zustand1 $zustand2 $zustand3)
+zustand_length=${#zustand[@]}
 
 #Datenbank erstellen
-echo ---------------------------------------------------------------------------
-echo Erstelle Datenbank $db "(Abkuerzung fuer Ersatzteilmanagement)"
+echo -----------------------------------------------------------------------
+echo Anzahl Zustaende: $zustand_length
+echo Anzahl Nutzer: $nutzer_length
+echo
+echo Erstelle Datenbank $db "(Abkuerzung fuer $db_full)"
 echo
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
   CREATE DATABASE $db;
 EOSQL
 echo
-
+#
 #Schemaerstellung
 echo Schemaerstellung
 echo ----------------
-echo Erstelle zustand_1
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+for((i=0;i<$zustand_length;i++));
+ do
+   echo Erstelle ${zustand[$i]}
+	psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
   \connect $db
-  CREATE SCHEMA zustand_1;
-  SET SEARCH_PATH TO zustand_1
+  CREATE SCHEMA ${zustand[$i]};
+  SET SEARCH_PATH TO ${zustand[$i]};
   \i docker-entrypoint-initdb.d/sample/create.sql
 EOSQL
-echo zustand_1 erstellt.
-echo 
-echo Erstelle zustand_2
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
-  \connect $db
-  CREATE SCHEMA zustand_2;
-  SET SEARCH_PATH TO zustand_2;
-  \i docker-entrypoint-initdb.d/sample/create.sql
-EOSQL
-echo zustand_2 erstellt.
-echo 
-echo Erstelle zustand_3
-  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
-  \connect $db
-  CREATE SCHEMA zustand_3;
-  SET SEARCH_PATH TO zustand_3;
-  \i docker-entrypoint-initdb.d/sample/create.sql
-EOSQL
-echo zustand_3 erstellt.
-echo 
+  echo ${zustand[$i]} erstellt.
+  echo
+ done 
+#
 #Automatische Datenbankverbindung
-echo Automatische Verbindung mit Datenbank $db eingerichten.
+echo Automatische Verbindung mit Datenbank $db einrichten.
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
     REVOKE connect ON DATABASE $db FROM PUBLIC
 EOSQL
@@ -77,12 +71,84 @@ echo
 echo Nutzererstellung
 echo ----------------
 for ((i=0;i<$nutzer_length;i++));
- do
+do
   echo Erstelle Nutzer: ${nutzer[$i]}
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
-    CREATE USER ${nutzer[$i]} WITH PASSWORD '${pw[$i]}'; 
+    CREATE USER ${nutzer[$i]} WITH PASSWORD '${pw[$i]}';
 EOSQL
   echo Nutzer: ${nutzer[$i]} erstellt.
-  echo
+  echo 
 done
-echo ---------------------------------------------------------------------------
+#
+#Rechtevergabe
+echo Rechtevergabe
+echo -------------
+echo Allgemeine Rechte
+echo
+echo  Verteile allgemeine Rechte.
+for ((i=0;i<$nutzer_length;i++));
+do
+  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+    \connect $db
+	GRANT CONNECT ON DATABASE $db to ${nutzer[$i]};
+    GRANT pg_read_server_files TO ${nutzer[$i]};
+    GRANT USAGE ON SCHEMA ${zustand[0]} TO ${nutzer[$i]};
+    GRANT USAGE ON SCHEMA ${zustand[1]}  TO ${nutzer[$i]};
+    GRANT USAGE ON SCHEMA ${zustand[2]}  TO ${nutzer[$i]};
+EOSQL
+done
+echo Allgemeine Rechte verteilt
+echo
+echo Spezifische Rechte
+echo
+echo Verteile spezifische Rechte für ${nutzer[0]}
+for ((i=0;i<$zustand_length;i++));
+do
+  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+		\connect $db
+		ALTER USER ${nutzer[0]} WITH $recht_nutzer;
+		GRANT ALL PRIVILEGES ON SCHEMA ${zustand[$i]} TO ${nutzer[1]};
+EOSQL
+done
+echo Spezifische Rechte für ${nutzer[0]} verteilt
+echo
+echo Verteile spezifische Rechte für ${nutzer[1]}
+for ((i=0;i<$zustand_length;i++));
+do
+  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+		\connect $db
+		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[1]};
+		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
+EOSQL
+done
+echo Spezifische Rechte für ${nutzer[2]} verteilt
+for ((i=0;i<$zustand_length;i++));
+do
+  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+		\connect $db
+		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[2]};
+		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lieferant TO ${nutzer[2]};
+		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.ersatzteil TO ${nutzer[2]};
+EOSQL
+done
+echo Spezifische Rechte für ${nutzer[2]} verteilt
+echo
+echo Zustandsbefuellung
+echo ------------------
+echo
+echo Befuele ${zustand[0]}
+psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+\connect $db
+SET SEARCH_PATH TO ${zustand[0]};
+\i docker-entrypoint-initdb.d/sample/zustand_1.sql
+EOSQL
+echo ${zustand[0]} befuellt.
+echo
+echo Befuele ${zustand[1]}
+psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+\connect $db
+SET SEARCH_PATH TO ${zustand[1]};
+\i docker-entrypoint-initdb.d/sample/zustand_2.sql;
+EOSQL
+echo ${zustand[1]} befuellt.
+echo -----------------------------------------------------------------------
