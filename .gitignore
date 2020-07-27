@@ -4,6 +4,8 @@ data/
 .env.example
 
 db_reset.sh
+anfrage1.sql
+anfrage2.sql
 
 *.pdf
 *.class
