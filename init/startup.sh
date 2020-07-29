@@ -1,6 +1,8 @@
 #/bin/bash
 
 set -e
+#Home
+
 
 #Systemadministrator
 nutzer="admin"
@@ -63,7 +65,7 @@ EOSQL
 #Automatische Datenbankverbindung
 echo Automatische Verbindung mit Datenbank $db einrichten.
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
-    REVOKE connect ON DATABASE $db FROM PUBLIC
+    REVOKE connect ON DATABASE $db FROM PUBLIC;
 EOSQL
 echo Automatische Verbindung mit Datenbank $db eingerichtet.
 echo
@@ -150,5 +152,13 @@ psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << 
 SET SEARCH_PATH TO ${zustand[1]};
 \i docker-entrypoint-initdb.d/sample/zustand_2.sql;
 EOSQL
-echo ${zustand[1]} befuellt.
+echo ${zustand[2]} befuellt.
+echo Befuele ${zustand[2]}
+psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+\connect $db
+SET SEARCH_PATH TO ${zustand[2]};
+copy $HOME/dbp20-projekt/german-iso-3166.csv csv header;
+--\i docker-entrypoint-initdb.d/sample/zustand_3.sql;
+EOSQL
+echo ${zustand[2]} befuellt.
 echo -----------------------------------------------------------------------

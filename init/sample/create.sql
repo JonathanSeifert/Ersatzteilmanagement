@@ -16,35 +16,31 @@ CREATE TABLE land(
   UNIQUE(land_id, land_name)
 );
 
---Tabelle fuer die Bundeslaender(Regierungsbezirke)
-CREATE TABLE bundesland(
-  bundesland_id VARCHAR(6) PRIMARY KEY,
+--Tabelle fuer die Regierungsbezirke
+CREATE TABLE regierungsbezirk(
+  regbez_id VARCHAR(6) PRIMARY KEY,
   land_id CHARACTER(2) NOT NULL REFERENCES land,
-  bundesland_name VARCHAR(50) NOT NULL,
-  CONSTRAINT land_id CHECK (land_id SIMILAR TO '[A-Z][A-Z]'),
-  CONSTRAINT bundesland_format CHECK
-    (bundesland_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
-     bundesland_id LIKE '__%'),
-  UNIQUE(bundesland_id, land_id)
+  regbez_name VARCHAR(50) NOT NULL,
+  CONSTRAINT regierungsbezirk_format CHECK
+    (regbez_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
+     regbez_id LIKE '__%'),
+  UNIQUE(regbez_id, land_id)
 );
 
 --Tabelle fuer die Staedte
 CREATE SEQUENCE stadt_id_seq AS SMALLINT START 1 INCREMENT 1 MAXVALUE 9999;
 CREATE TABLE stadt(
   stadt_id NUMERIC(4) PRIMARY KEY DEFAULT NEXTVAL('stadt_id_seq'),
-  bundesland_id VARCHAR(6) NOT NULL REFERENCES bundesland,
+  regbez_id VARCHAR(6) NOT NULL REFERENCES regierungsbezirk,
   stadt_name VARCHAR(58) NOT NULL,
-  plz VARCHAR(10) NOT NULL,
-  UNIQUE(bundesland_id, plz),
-  CONSTRAINT bundesland_format CHECK
-    (bundesland_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
-     bundesland_id LIKE '__%')
+  plz VARCHAR(10),
+  UNIQUE(regbez_id, plz)
 );
 
 --Tabelle fuer die Standorte
 CREATE TABLE standort(
   standort_id CHARACTER(2) PRIMARY KEY,
-  stadt_id NUMERIC(3) NOT NULL REFERENCES stadt,
+  stadt_id NUMERIC(4) NOT NULL REFERENCES stadt,
   standort_name VARCHAR(50) NOT NULL,
   anschrift VARCHAR(50) NOT NULL
 );
@@ -74,7 +70,7 @@ CREATE TABLE lieferant(
   email VARCHAR(50) NOT NULL,
   ansprechpartner VARCHAR(50),
   letzte_aktualisierung TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-  CONSTRAINT email_format CHECK (email LIKE '___%@%.__%')
+  CONSTRAINT email_format CHECK (email LIKE '%@%.__%')
 );
 CREATE TRIGGER aktualisierung_lieferant BEFORE UPDATE ON lieferant
   FOR EACH ROW EXECUTE PROCEDURE aktualisiert()
@@ -83,22 +79,23 @@ CREATE TRIGGER aktualisierung_lieferant BEFORE UPDATE ON lieferant
 --Tabelle fuer die eclass-Kategorisierung
 CREATE TABLE eclass(
 eclass VARCHAR(11) PRIMARY KEY,
-beschreibung VARCHAR(50) NOT NULL,
+eclass_beschreibung VARCHAR(50) NOT NULL,
 CONSTRAINT eclass_format CHECK
  (eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' OR
   eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]-[0-9][0-9]' OR
   eclass SIMILAR TO '[0-9][0-9]-[0-9][0-9]' OR
   eclass SIMILAR TO '[0-9][0-9]'),
-UNIQUE(eclass, beschreibung)
+UNIQUE(eclass_beschreibung)
 );
 
 --Tabelle fuer die Prioriserung des Bedarfs
 CREATE TABLE priorisierung(
 p_id CHARACTER(1) PRIMARY KEY,
 beschreibung VARCHAR(45) NOT NULL,
-CONSTRAINT a_b_c CHECK(p_id SIMILAR TO '[a-c]')
+CONSTRAINT a_b_c CHECK
+  (p_id SIMILAR to '[a-c]')
 );
-INSERT INTO priorisierung VALUES
+INSERT INTO priorisierung(p_id, beschreibung) VALUES
   ('a', 'Ersatzteil muss auf Lager sein'),
   ('b', 'Lieferzeit zwischen einem Tag und einer Woche'),
   ('c', 'Lieferzeit von mehr als einer Woche')
@@ -110,7 +107,6 @@ CREATE SEQUENCE e_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 99999
 CREATE TABLE ersatzteil(
   e_id NUMERIC(5) PRIMARY KEY DEFAULT(NEXTVAL('e_id_seq')),
   eclass VARCHAR(11) NOT NULL REFERENCES eclass,
-  abteilung_id CHARACTER(4) NOT NULL REFERENCES abteilung,
   lieferant_id NUMERIC(3) NOT NULL REFERENCES lieferant,
   kennzeichnung VARCHAR(50) NOT NULL,
   kosten NUMERIC(9,2) NOT NULL,
@@ -122,13 +118,18 @@ CREATE TABLE ersatzteil(
 CREATE TRIGGER aktualiserung_ersatzteil BEFORE UPDATE ON ersatzteil
   FOR EACH ROW EXECUTE PROCEDURE aktualisiert()
 ;
-
+--Tabelle für Zuordnung von Ersatzteilen zu Abteilungen
+CREATE TABLE zuordnung(
+  e_id NUMERIC(5) NOT NULL,
+  abteilung_id CHARACTER(4) NOT NULL,
+  UNIQUE(e_id, abteilung_id)
+);
 --Sequenz, Create und Trigger für Tabelle für Lagerort-Verwaltung
 CREATE SEQUENCE lagerort_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 999999
 ;
 
 CREATE TABLE lagerort(
-  lagerort_id NUMERIC(6) PRIMARY KEY,
+  lagerort_id NUMERIC(7) PRIMARY KEY DEFAULT NEXTVAL('lagerort_id_seq'),
   e_id NUMERIC(5) NOT NULL REFERENCES ersatzteil,
   lager_id VARCHAR(4) NOT NULL REFERENCES lager,
   anzahl NUMERIC(2) NOT NULL,
@@ -137,8 +138,8 @@ CREATE TABLE lagerort(
   letzter_zugang TIMESTAMP(0) WITHOUT TIME ZONE,
   CONSTRAINT anzahl_darf_nicht_negativ_sein CHECK
     (anzahl>-1),
-  CONSTRAINT mindestbestand_muss_mind_1_sein CHECK
-    (mindestbestand>0),
+  CONSTRAINT mindestbestand_muss_postiv_sein CHECK
+    (mindestbestand>-1),
   UNIQUE(e_id, lager_id)
 );
 
@@ -158,7 +159,7 @@ CREATE FUNCTION teil_zugefuehrt() RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
   BEGIN
-  IF (OLD.anzahl>NEW.anzahl) THEN NEW.letzter_abgang = CURRENT_TIMESTAMP;
+  IF (OLD.anzahl  < NEW.anzahl) THEN NEW.letzter_zugang = CURRENT_TIMESTAMP;
   END IF;
   RETURN NEW;
   END
