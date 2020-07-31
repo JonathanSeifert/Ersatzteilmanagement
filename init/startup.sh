@@ -32,6 +32,10 @@ zustand3="zustand3"
 declare -a zustand=($zustand1 $zustand2 $zustand3)
 zustand_length=${#zustand[@]}
 
+#Indexe
+index1="anzahl_mindestbestand"
+index2="kosten_eclass"
+
 #Datenbank erstellen
 echo -----------------------------------------------------------------------
 echo Anzahl Zustaende: $zustand_length
@@ -63,10 +67,25 @@ EOSQL
 #Automatische Datenbankverbindung
 echo Automatische Verbindung mit Datenbank $db einrichten.
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
+\connect $db
     REVOKE connect ON DATABASE $db FROM PUBLIC;
 EOSQL
 echo Automatische Verbindung mit Datenbank $db eingerichtet.
 echo
+#Indexerstellung
+echo Erstelle Index
+echo ----------------
+for ((i=0;i<$nutzer_length;i++));
+do
+  echo Erstelle Nutzer: ${nutzer[$i]}
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
+  \connect $db
+    CREATE INDEX $index1 ON ${zustand[$i]}.lagerort(anzahl, mindestbestand) ;
+	CREATE INDEX $index2 ON ${zustand[$i]}.ersatzteil(kosten, eclass);
+EOSQL
+  echo Nutzer: ${nutzer[$i]} erstellt.
+  echo 
+done
 #Nutzererstellung
 echo Nutzererstellung
 echo ----------------
@@ -118,7 +137,7 @@ do
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[1]};
-		GRANT UPDATE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
+		GRANT UPDATE (anzahl) ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
 EOSQL
 done
 echo Spezifische Rechte für ${nutzer[2]} verteilt
@@ -158,7 +177,6 @@ echo Befuele ${zustand[2]}
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 \connect $db
 SET SEARCH_PATH TO ${zustand[2]};
-copy $HOME/dbp20-projekt/german-iso-3166.csv csv header;
 --\i docker-entrypoint-initdb.d/sample/zustand_3.sql;
 EOSQL
 echo ${zustand[2]} befuellt.
