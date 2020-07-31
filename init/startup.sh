@@ -63,27 +63,17 @@ EOSQL
   echo ${zustand[$i]} erstellt.
   echo
  done 
-#
-#Automatische Datenbankverbindung
-echo Automatische Verbindung mit Datenbank $db einrichten.
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
-\connect $db
-    REVOKE connect ON DATABASE $db FROM PUBLIC;
-EOSQL
-echo Automatische Verbindung mit Datenbank $db eingerichtet.
-echo
+
 #Indexerstellung
 echo Erstelle Index
 echo ----------------
 for ((i=0;i<$nutzer_length;i++));
 do
-  echo Erstelle Nutzer: ${nutzer[$i]}
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER"  --dbname "$POSTGRES_DB" << EOSQL
   \connect $db
     CREATE INDEX $index1 ON ${zustand[$i]}.lagerort(anzahl, mindestbestand) ;
 	CREATE INDEX $index2 ON ${zustand[$i]}.ersatzteil(kosten, eclass);
 EOSQL
-  echo Nutzer: ${nutzer[$i]} erstellt.
   echo 
 done
 #Nutzererstellung
@@ -137,6 +127,7 @@ do
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[1]};
+		REVOKE SELECT (kosten) on TABLE ${zustand[$i]}.ersatzteil TO ${nutzer[1]};
 		GRANT UPDATE (anzahl) ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
 EOSQL
 done
@@ -148,8 +139,10 @@ do
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[2]};
 		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lieferant TO ${nutzer[2]};
 		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.ersatzteil TO ${nutzer[2]};
+		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[2]};
 		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lieferant_id_seq TO ${nutzer[2]};
 		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.e_id_seq TO ${nutzer[2]};
+		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lagerort_is_seqTO ${nutzer[2]};
 		
 EOSQL
 done
