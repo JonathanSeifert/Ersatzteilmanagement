@@ -6,21 +6,31 @@ Postgre: 5436
 
 ##Der erste Start
 1. docker und docker-compose für das System installieren
-2. 
+2. .env.example -> Password ändern und in .env umbenennen
+3. docker-compose build 
+4. docker-compose up
 
-##Skripts zur Steuerung des Docker-Containers befinden sich im Ordner bash-skripts
+##DB-Zurücksetzen
+1. docker-compose down
+2. /data löschen (rm -r data)
+3. docker compose build
+4. docker compose start
 
-db_start.sh: sudo docker-compose build -> sudo docker-compose start
-db_clear.sh: sudo rm -r data
-db_reset.sh: sudo rm -r data -> sudo docker-compose build -> sudo docker-compose start
+##Nutzer
+1. admin
+2. lagerist
+3. abteilungsleiter 
 
-##Anwendungsprogramme
-###Java
+#Anwendungsprogramme
+##Java
 Befehl im Terminal: java -jar <Anwendung>
 
 Anwendung1.jar  : Lagerverwaltung (SELECT und UPDATE) -> Aktualisierung der bestehenden Anzahl in einem Lager
 Anwendung2.jar  : Lieferanten- und Ersatzteilverwaltung (INSERT und DELETE) -> Hinzufügen bzw. Entfernen von Lieferanten/Ersatzteilen
 
-###Bash
+##Bash
 Befehl im Terminal: bash <Anwendung>
-rollup.sh : DatawareHouse-Report -> Zeigt den Wert aller gelagerten Ersatzteile pro Standort
+
+recursive.sh 	: Rekursive Anfrage -> Listet die Lieferanten nach Standort und Abteilung auf
+rollup.sh 	: DatawareHouse-Report -> Zeigt den Wert aller gelagerten Ersatzteile pro Standort
+
