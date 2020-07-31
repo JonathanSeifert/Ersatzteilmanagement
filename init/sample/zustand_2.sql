@@ -7,7 +7,7 @@ INSERT INTO land(land_id, land_name) values
 ('GB', 'Großbrittanien'),
 ('US', 'Vereinigte Staaten von Amerika');
 
-INSERT INTO bundesland(bundesland_id, land_id, bundesland_name) values
+INSERT INTO regierungsbezirk(regbez_id, land_id, regbez_name) values
 ('DE:BW', 'DE', 'Baden-Württemberg'),
 ('DE:BY', 'DE', 'Bayern'),
 ('DE:BE', 'DE', 'Berlin'),

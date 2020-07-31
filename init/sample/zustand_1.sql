@@ -50,7 +50,8 @@ INSERT INTO stadt(stadt_id, regbez_id, stadt_name, plz) values
 (default, 'AT-5', 'Salzburg', '5082'),
 (default, 'DE:NW', 'Düsseldorf', '40468'),
 (default, 'DE:SH', 'Glinde', '21509'),
-(default, 'DE:BW', 'Weil am Rhein', '79756');
+(default, 'DE:BW', 'Weil am Rhein', '79756'),
+(default, 'DE:NW', 'Essen', '45145');
 
 INSERT INTO standort(standort_id, stadt_id, standort_name, anschrift) values
 ('10', '1', 'Werk Wittenberg', 'Heuweg 5'),
@@ -74,7 +75,8 @@ INSERT INTO lager(lager_id, standort_id, lager_name) values
 ('1081', '10', 'Wittenberg L1'),
 ('1082', '10', 'Wittenberg L2'),
 ('3181', '31', 'Klagenfurt L1'),
-('1181', '11', 'Halle 1L1');
+('1181', '11', 'Halle 1L1'),
+('2181', '21', 'Austin I Storage 1');
 
 INSERT INTO eclass(eclass, eclass_beschreibung) values
 ('36-41-03-05', 'Schraubenspindelpumpe'),
@@ -86,7 +88,6 @@ INSERT INTO eclass(eclass, eclass_beschreibung) values
 ('27-20-13-00', 'Druckaufnehmer'),
 ('27-27-31-00', 'Stömungswächter'),
 ('27-20-05-18', 'Füllstandsmessgerät'),
-('27-27-06-01', 'Sicherheitssensor'),
 ('27-18-07-01', 'Klima-Schaltschrank'),
 ('36-09-05-01', 'Druckluftfilter'),
 ('22-41-11-00', 'Luftfilter für Lüftungssystem'),
@@ -99,14 +100,18 @@ INSERT INTO lieferant(lieferant_id, lieferant_name, anschrift, stadt_id, email, 
 (default, 'Bürkert GmbH & Co.KG', 'Christian-Bürkert-Straße 13-17', 6, 'vertrieb@bürkert.de', NULL),
 (default, 'Gea Group Aktiengesellschaft', 'Peter-Müller-Straße 12', 12, 'info@gea.com', 'Herr Müller'),
 (default, 'Alfa Laval Mid Europe GmbH', 'Wilhelm-Bergner-Straße 7', 13, 'info.mideurope@alfalaval.com', NULL),
-(default, 'Endress+Hauser (Deutschland) GmbH+Co.KG', 'Colmarer Straße 6',  14, 'info.de@endress.com', NULL);
+(default, 'Endress+Hauser (Deutschland) GmbH+Co.KG', 'Colmarer Straße 6',  14, 'info.de@endress.com', NULL),
+(default, 'ifm electronic gmbh', 'Friedrichstraße 1', 15, 'info@ifm.com', NULL),
+(default, 'Flowserve Essen GmbH', 'Schederhofstr. 71', 15, 'fcd@flowserve.com', null);
 
 INSERT INTO ersatzteil(e_id, eclass, lieferant_id, kennzeichnung, kosten, p_id) values
 (default, '27-22-06-01', 1, '6213', 149.95, 'a'),
 (default, '36-41-01-00', 3, 'LKH', 489.49, 'b'),
 (default, '36-10-01-04', 2, 'CF-4000', 629.99, 'c'),
 (default, '27-20-13-00', 4, 'CerabarM', 134.49, 'b'),
-(default, '27-20-13-00', 4, 'CeraphanT', 139.99, 'a');
+(default, '27-20-13-00', 4, 'CeraphanT', 139.99, 'a'),
+(default, '27-27-31-00', 5, 'SI2200', 45.49, 'a'),
+(default, '37-01-02-03', 6, 'KVS', 104.95 ,'b');
 
 INSERT INTO zuordnung (e_id, abteilung_id) values
 (1, '1001'),
@@ -116,14 +121,30 @@ INSERT INTO zuordnung (e_id, abteilung_id) values
 (2, '3152'),
 (3, '1103'),
 (4, '1001'),
-(5, '1001');
+(5, '1001'),
+(6, '1001');
 
 INSERT INTO lagerort(lagerort_id, e_id, lager_id, mindestbestand, anzahl) VALUES
 (default, 1, '1081', 2, 4),
+(default, 2, '1081', 5, 11),
+(default, 3, '1081', 1, 1),
+(default, 4, '1081', 5, 7),
+(default, 5, '1081', 7, 8),
+(default, 6, '1081', 4, 4),
+(default, 1, '1082', 5, 7),
+(default, 2, '1082', 2, 3),
+(default, 3, '1082', 4, 5),
+(default, 4, '1082', 6, 7),
+(default, 5, '1082', 5, 7),
+(default, 6, '1082', 3, 4),
 (default, 1, '3181', 5, 7),
-(default, 2, '3181', 1, 2),
-(default, 3, '1181', 3, 5),
-(default, 4, '1081', 4, 7);
+(default, 2, '3181', 2, 3),
+(default, 3, '3181', 4, 5),
+(default, 4, '3181', 6, 7),
+(default, 5, '3181', 5, 7),
+(default, 6, '3181', 3, 4);
+
+
 
 
 

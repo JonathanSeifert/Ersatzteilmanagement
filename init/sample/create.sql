@@ -19,7 +19,7 @@ CREATE TABLE land(
 --Tabelle fuer die Regierungsbezirke
 CREATE TABLE regierungsbezirk(
   regbez_id VARCHAR(6) PRIMARY KEY,
-  land_id CHARACTER(2) NOT NULL REFERENCES land,
+  land_id CHARACTER(2) NOT NULL REFERENCES land ON DELETE CASCADE,
   regbez_name VARCHAR(50) NOT NULL,
   CONSTRAINT regierungsbezirk_format CHECK
     (regbez_id SIMILAR TO '[A-Z][A-Z](:|-)[A-Z][A-Z]' OR
@@ -31,7 +31,7 @@ CREATE TABLE regierungsbezirk(
 CREATE SEQUENCE stadt_id_seq AS SMALLINT START 1 INCREMENT 1 MAXVALUE 9999;
 CREATE TABLE stadt(
   stadt_id NUMERIC(4) PRIMARY KEY DEFAULT NEXTVAL('stadt_id_seq'),
-  regbez_id VARCHAR(6) NOT NULL REFERENCES regierungsbezirk,
+  regbez_id VARCHAR(6) NOT NULL REFERENCES regierungsbezirk ON DELETE CASCADE,
   stadt_name VARCHAR(58) NOT NULL,
   plz VARCHAR(10),
   UNIQUE(regbez_id, plz)
@@ -40,7 +40,7 @@ CREATE TABLE stadt(
 --Tabelle fuer die Standorte
 CREATE TABLE standort(
   standort_id CHARACTER(2) PRIMARY KEY,
-  stadt_id NUMERIC(4) NOT NULL REFERENCES stadt,
+  stadt_id NUMERIC(4) NOT NULL REFERENCES stadt ON DELETE CASCADE,
   standort_name VARCHAR(50) NOT NULL,
   anschrift VARCHAR(50) NOT NULL
 );
@@ -48,14 +48,14 @@ CREATE TABLE standort(
 --Tabelle fuer die Lager
 CREATE TABLE lager(
   lager_id CHARACTER(4) PRIMARY KEY,
-  standort_id CHARACTER(2) NOT NULL REFERENCES standort,
+  standort_id CHARACTER(2) NOT NULL REFERENCES standort ON DELETE CASCADE,
   lager_name VARCHAR(50) NOT NULL
 );
 
 --Tabelle fuer die Abteilungen
 CREATE TABLE abteilung(
   abteilung_id CHARACTER(4) PRIMARY KEY,
-  standort_id CHARACTER(2) NOT NULL REFERENCES standort,
+  standort_id CHARACTER(2) NOT NULL REFERENCES standort ON DELETE CASCADE,
   abteilung_name VARCHAR(50)
 );
 
@@ -107,7 +107,7 @@ CREATE SEQUENCE e_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 99999
 CREATE TABLE ersatzteil(
   e_id NUMERIC(5) PRIMARY KEY DEFAULT(NEXTVAL('e_id_seq')),
   eclass VARCHAR(11) NOT NULL REFERENCES eclass,
-  lieferant_id NUMERIC(3) NOT NULL REFERENCES lieferant,
+  lieferant_id NUMERIC(3) NOT NULL REFERENCES lieferant ON DELETE CASCADE,
   kennzeichnung VARCHAR(50) NOT NULL,
   kosten NUMERIC(9,2) NOT NULL,
   p_id CHARACTER(1) NOT NULL REFERENCES priorisierung,
@@ -130,8 +130,8 @@ CREATE SEQUENCE lagerort_id_seq AS INTEGER START 1 INCREMENT 1 MAXVALUE 999999
 
 CREATE TABLE lagerort(
   lagerort_id NUMERIC(7) PRIMARY KEY DEFAULT NEXTVAL('lagerort_id_seq'),
-  e_id NUMERIC(5) NOT NULL REFERENCES ersatzteil,
-  lager_id VARCHAR(4) NOT NULL REFERENCES lager,
+  e_id NUMERIC(5) NOT NULL REFERENCES ersatzteil ON DELETE CASCADE,
+  lager_id VARCHAR(4) NOT NULL REFERENCES lager ON DELETE CASCADE,
   anzahl NUMERIC(2) NOT NULL,
   mindestbestand NUMERIC(2) NOT NULL,
   letzter_abgang TIMESTAMP(0) WITHOUT TIME ZONE,
