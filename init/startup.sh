@@ -127,7 +127,7 @@ do
   psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[1]};
-		REVOKE SELECT (kosten) on TABLE ${zustand[$i]}.ersatzteil TO ${nutzer[1]};
+		REVOKE SELECT (kosten) on TABLE ${zustand[$i]}.ersatzteil FROM ${nutzer[1]};
 		GRANT UPDATE (anzahl) ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
 EOSQL
 done
@@ -142,7 +142,7 @@ do
 		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[2]};
 		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lieferant_id_seq TO ${nutzer[2]};
 		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.e_id_seq TO ${nutzer[2]};
-		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lagerort_is_seqTO ${nutzer[2]};
+		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lagerort_id_seq TO ${nutzer[2]};
 		
 EOSQL
 done
