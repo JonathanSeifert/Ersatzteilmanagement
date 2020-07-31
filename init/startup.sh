@@ -1,8 +1,6 @@
 #/bin/bash
 
 set -e
-#Home
-
 
 #Systemadministrator
 nutzer="admin"
@@ -90,7 +88,7 @@ echo
 echo  Verteile allgemeine Rechte.
 for ((i=0;i<$nutzer_length;i++));
 do
-  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
     \connect $db
 	GRANT CONNECT ON DATABASE $db to ${nutzer[$i]};
     GRANT pg_read_server_files TO ${nutzer[$i]};
@@ -106,7 +104,7 @@ echo
 echo Verteile spezifische Rechte für ${nutzer[0]}
 for ((i=0;i<$zustand_length;i++));
 do
-  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		ALTER USER ${nutzer[0]} WITH $recht_nutzer;
 		GRANT ALL PRIVILEGES ON SCHEMA ${zustand[$i]} TO ${nutzer[1]};
@@ -117,20 +115,23 @@ echo
 echo Verteile spezifische Rechte für ${nutzer[1]}
 for ((i=0;i<$zustand_length;i++));
 do
-  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[1]};
-		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
+		GRANT UPDATE ON TABLE ${zustand[$i]}.lagerort TO ${nutzer[1]};
 EOSQL
 done
 echo Spezifische Rechte für ${nutzer[2]} verteilt
 for ((i=0;i<$zustand_length;i++));
 do
-  psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+  psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 		\connect $db
 		GRANT SELECT ON ALL TABLES IN SCHEMA ${zustand[$i]} TO ${nutzer[2]};
 		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.lieferant TO ${nutzer[2]};
 		GRANT INSERT, UPDATE,  DELETE ON TABLE ${zustand[$i]}.ersatzteil TO ${nutzer[2]};
+		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.lieferant_id_seq TO ${nutzer[2]};
+		GRANT ALL PRIVILEGES ON SEQUENCE ${zustand[$i]}.e_id_seq TO ${nutzer[2]};
+		
 EOSQL
 done
 echo Spezifische Rechte für ${nutzer[2]} verteilt
@@ -147,14 +148,14 @@ EOSQL
 echo ${zustand[0]} befuellt.
 echo
 echo Befuele ${zustand[1]}
-psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 \connect $db
 SET SEARCH_PATH TO ${zustand[1]};
 \i docker-entrypoint-initdb.d/sample/zustand_2.sql;
 EOSQL
 echo ${zustand[2]} befuellt.
 echo Befuele ${zustand[2]}
-psql -v ON_ERRROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" << EOSQL
 \connect $db
 SET SEARCH_PATH TO ${zustand[2]};
 copy $HOME/dbp20-projekt/german-iso-3166.csv csv header;
