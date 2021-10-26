@@ -1,5 +1,6 @@
 # Ersatzteilmanagement 
 Dieses Repository beinhaltet das Projekt "Ersatzteilmanagement", welches zum Modul "Datenbank-Programmierung" gehört.
+Der Projektbericht befindet sich in diesem Repository unter dem Namen **Projektbericht.pdf**
 
 **Port**
 Postgre: 5436
